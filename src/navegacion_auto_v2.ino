@@ -181,7 +181,7 @@ bool girar90Izq () {
   bool frenteLibre = false;
   if (distancia > umbral) {
     while (distancia > umbral && i < tiempoAvance && frenteLibre == false) {  
-      if (i%500 == 0) {    //explicado en la función de abajo
+      if (i%500 == 0 && i > 0) {    //explicado en la función de abajo
         girarHorario ();
         delay(tiempoGiro);
         detenerse ();
@@ -259,7 +259,7 @@ bool girar90Der () {
   bool frenteLibre = false;
   if (distancia > umbral) {
     while (distancia > umbral && i < tiempoAvance && frenteLibre == false) {  
-      if (i%500 == 0) {   //como tiene un radar en el frente nada más, cada medio segundo gira 90 grados para quedar en la dirección original,
+      if (i%500 == 0 && i > 0) {   //como tiene un radar en el frente nada más, cada medio segundo gira 90 grados para quedar en la dirección original,
         girarAntiHorario ();   //analiza si el frente está libre, si no lo está gira 90 grados para el otro lado, y sigue avanzando
         delay(tiempoGiro);              //paralelo al obstáculo hasta que cumpla el tiempoAvance máximo. 
         detenerse();      
@@ -309,7 +309,7 @@ bool girar90Der () {
       while (i < tiempoGiro) {
         delay (100);
         i += 100;
-      }
+      }  
       detenerse();
     }
   if (frenteLibre == true) {

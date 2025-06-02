@@ -6,8 +6,8 @@
 #define pinLed        D4
 #define Trigger       D2
 #define Echo          D1
-#define tiempoGiro    500
-#define tiempoAvance  1500
+#define tiempoGiro    1500
+#define tiempoAvance  5000
 #define umbral        15
 bool reversa = false;
 const char* nombre_wifi = "Robotin";
@@ -170,11 +170,7 @@ bool girar90Izq () {
   detenerse();
   delay(500);
   girarAntiHorario ();
-  while (i < tiempoGiro) {       //tiempo para que gire 90 grados en ms, fijarse
-    delay (100);
-    i += 100;
-  }
-  i = 0;
+  delay(tiempoGiro);
   detenerse ();
   delay(500);
   int distancia = promedioDistancia ();
@@ -210,18 +206,12 @@ bool girar90Izq () {
       detenerse ();
       delay(500);
       marchaAtras ();
-      while (i < tAvanz) {    
-        delay (100);
-        i += 100;
-      }
+      delay(tAvanz);
       detenerse ();
       delay(500);
       i = 0;
       girarHorario ();   
-      while (i < tiempoGiro) {
-        delay (100);
-        i += 100;
-      }
+      delay(tiempoGiro);
       detenerse();
     } 
   } else {        
@@ -229,10 +219,7 @@ bool girar90Izq () {
       delay(500);
       i = 0;
       girarHorario ();                 //deshace el giro (no llegó a avanzar)
-      while (i < tiempoGiro) {  
-        delay (100);
-        i += 100;
-      }
+      delay(tiempoGiro);
       detenerse();
     }
   if (frenteLibre == true) {
@@ -248,11 +235,7 @@ bool girar90Der () {
   detenerse();
   delay (500);
   girarHorario ();
-  while (i < tiempoGiro) {       //tiempo para que gire 90 grados en ms, fijarse
-    delay (100);
-    i += 100;
-  }
-  i = 0;
+  delay(tiempoGiro);
   detenerse();
   delay (500);
   int distancia = promedioDistancia ();
@@ -287,18 +270,11 @@ bool girar90Der () {
       detenerse();
       delay (500);
       marchaAtras ();
-      while (i < tAvanz) {    
-        delay (100);
-        i += 100;
-      }
-      i = 0;
+      delay (tAvanz);
       detenerse();
       delay (500);
       girarAntiHorario ();   
-      while (i < tiempoGiro) {
-        delay (100);
-        i += 100;
-      }
+      delay(tiempoGiro);
       detenerse();
     } 
   } else {        
@@ -306,10 +282,7 @@ bool girar90Der () {
       detenerse();
       delay (500);      
       girarAntiHorario ();           //deshace el giro (no llegó a avanzar)
-      while (i < tiempoGiro) {
-        delay (100);
-        i += 100;
-      }  
+      delay(tiempoGiro);
       detenerse();
     }
   if (frenteLibre == true) {
@@ -319,141 +292,13 @@ bool girar90Der () {
   }
   return frenteLibre;
 }
-/*
-bool esquivarXIzq () {
-  bool pudo = true;
-  int i = 0;
-  int distancia = promedioDistancia ();
-  detenerse();
-  delay (500);
-  bool giro90 = girar90Izq ();
-  if (giro90) {
-    while (i < tiempoGiro) {
-      girarHorario ();
-      delay (100);
-      i += 100;
-    }
-    distancia = promedioDistancia();
-    if (distancia < umbral) {
-      pudo = false;
-      i = 0;
-      detenerse();
-      delay (500);
-      while (i < tiempoGiro) {            // creo que haría la L invertida
-        marchaAtras ();
-        delay (100);
-        i += 100;
-      }
-      detenerse();
-      delay (500);
-      i = 0;
-      while (i < tiempoGiro) {
-        girarAntiHorario ();
-        delay (100);
-        i += 100;
-      }
-      detenerse();
-      delay (500);
-      i = 0;
-      while (i < tiempoGiro) {
-        marchaAtras ();
-        delay (100);
-        i += 100;
-      }
-      detenerse();
-      delay (500);
-      i = 0;
-      while (i < tiempoGiro) {
-        girarHorario ();
-        delay (100);
-        i += 100;
-      }
-      detenerse();
-      delay (800);
-    }
-  } else {
-    pudo = false;
-  }
-  if (pudo == true) {
-    Serial.println("esquivó bien x izq");
-  } else {
-    Serial.println("NO esquivó x izq");
-  } 
- return pudo; 
-} 
 
-bool esquivarXDer () {
-  bool pudo = true;
-  int i = 0;
-  int distancia = promedioDistancia ();
-  detenerse();
-  delay (500);
-  bool giro90 = girar90Der ();
-  if (giro90) {
-    while (i < tiempoGiro) {
-      girarAntiHorario ();
-      delay (100);
-      i += 100;
-    }
-    distancia = promedioDistancia ();
-    if (distancia < umbral) {
-      pudo = false;
-      detenerse();
-      delay (500);
-      i = 0;
-      while (i < tiempoGiro) {            // creo que haría la L invertida
-        marchaAtras ();
-        delay (100);
-        i += 100;
-      }
-      detenerse();
-      delay (500);
-      i = 0;
-      while (i < tiempoGiro) {
-        girarHorario ();
-        delay (100);
-        i += 100;
-      }
-      detenerse();
-      delay (500);
-      i = 0;
-      while (i < tiempoGiro) {
-        marchaAtras ();
-        delay (100);
-        i += 100;
-      }
-      detenerse();
-      delay (500);
-      i = 0;
-      while (i < tiempoGiro) {
-        girarAntiHorario ();
-        delay (100);
-        i += 100;
-      }
-      detenerse();
-      delay (800);
-    }
-  } else {
-    pudo = false;
-  } 
-  if (pudo == true) {
-    Serial.println("esquivó bien x der");
-  } else {
-    Serial.println("NO esquivó x der");
-  }
- return pudo; 
-}
-
-*/
 void giro180 () {
-  int i = 0;
   detenerse();
   delay(500);
   girarHorario ();
-  while (i < 2*tiempoGiro) { //tiempo giro 180 grados, calcular
-    delay (100);
-    i += 100;
-  }
+  delay(2*tiempoGiro);
+  detenerse ();
   Serial.println("gira 180");
 }
 

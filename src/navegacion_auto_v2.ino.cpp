@@ -1,36 +1,39 @@
+# 1 "C:\\Users\\ivanb\\AppData\\Local\\Temp\\tmpib4nn7w3"
+#include <Arduino.h>
+# 1 "C:/Users/ivanb/Documents/PlatformIO/Projects/Taller-Robotica-PIO/src/navegacion_auto_v2.ino"
 #include <ESP8266WiFi.h>
-#define motor_der_a    D8
-#define motor_der_b    D7
-#define motor_izq_a    D6
-#define motor_izq_b    D5
-#define pinLed         D4
-#define Trigger        D2
-#define Echo           D1
-#define pinVoltage     A0
-#define tiempoAvance   5000
-#define umbral         15
+#define motor_der_a D8
+#define motor_der_b D7
+#define motor_izq_a D6
+#define motor_izq_b D5
+#define pinLed D4
+#define Trigger D2
+#define Echo D1
+#define pinVoltage A0
+#define tiempoAvance 5000
+#define umbral 15
 #define tiempoGiroAnti 1200
 #define tiempoGiroHor 1100
-const int v_max = 1;  // Velocidad tope (la más rápida)
-const int v_min = 0.25;  // Velocidad más lenta
-const float R1 = 10000.0; //  ohms
-const float R2 = 5000.0;  //  ohms
+const int v_max = 1;
+const int v_min = 0.25;
+const float R1 = 10000.0;
+const float R2 = 5000.0;
 bool reversa = false;
 const char* nombre_wifi = "Robotin";
 const char* contra = "robotin123";
 long duracion;
 int distancia;
-bool manual = true; 
-int v; //es un porcentaje de la velocidad maxima
+bool manual = true;
+int v;
 int i;
-/*
 
-creo que lo mejor es usar el rover como Access Point
 
-*/
-IPAddress ip_rover(192,168,4,1);       
-IPAddress puerta_enlace(192,168,4,1);        // Gateway (igual que la IP en modo punto de acceso)
-IPAddress mascara(255,255,255,0);        // Máscara de subred
+
+
+
+IPAddress ip_rover(192,168,4,1);
+IPAddress puerta_enlace(192,168,4,1);
+IPAddress mascara(255,255,255,0);
 
 
 struct motor {
@@ -40,64 +43,44 @@ struct motor {
 
 motor motor_izq {motor_izq_a,motor_izq_b};
 motor motor_der {motor_der_a,motor_der_b};
-
+void VoltBateria ();
+void setearVel (int pos);
+int vActual ();
+void configurarMotor (motor m);
+void girarAdelante (motor m);
+void girarAtras (motor m);
+void frenar (motor m);
+void prenderLed ();
+void apagarLed ();
+int calcularDistancia();
+void girarIzq ();
+void girarDer ();
+void avanzar ();
+void detenerse ();
+void marchaAtras ();
+void girarIzqMarchaAtras ();
+void girarHorario ();
+void girarAntiHorario ();
+void girarDerMarchaAtras ();
+bool evadirIzq ();
+bool evadirDer ();
+void giro180 ();
+void navegacionAutomatica();
+void manejarCliente(WiFiClient &cliente);
+bool clienteNuevo (WiFiClient &cliente);
+void setup();
+void loop();
+#line 44 "C:/Users/ivanb/Documents/PlatformIO/Projects/Taller-Robotica-PIO/src/navegacion_auto_v2.ino"
 void VoltBateria () {
-  // si 1023 es 8.4 -> valor = analogWrite (A0) * 8.4/1023 
+
   int val = analogRead (A0);
   Serial.print("Valor digital batería: ");
   Serial.println (val);
   Serial.print("Volts batería: ");
-  Serial.println(val * 0.1144); // Lee el valor analógico del pin A0
-  
-  /*
-  float voltajePin = valorADC * (3.3 / 1023.0); // Convierte a voltaje ya que el rango es 0-1V, supuestamente la d1 mini tiene resist internas que hacen que con 3.3V llegue 1V
-  float voltajeBateria = voltajePin * ((R1 + R2) / R2);
-  Serial.print ("Batería: ");
-  Serial.println (voltajeBateria);
-  Serial.print ("Porcentaje de batería: ");
-  Serial.println (voltajeBateria);
-  return voltajeBateria;
-  */
+  Serial.println(val * 0.1144);
+# 61 "C:/Users/ivanb/Documents/PlatformIO/Projects/Taller-Robotica-PIO/src/navegacion_auto_v2.ino"
 }
-/*
-void acelerar () {
-  if (v < 0.9) {
-    v = v + 0.20;
-  }
-  tiempoGiroHor = tiempoGiroHorOrig / v;
-  tiempoGiroAnti = tiempoGiroAntiOrig / v;
-  Serial.print("Velocidad: ");
-  Serial.println (int(1023*v));
-  Serial.print ("Tiempo giro horario 90 grados: ");
-  Serial.println (tiempoGiroHor);
-  Serial.print ("Tiempo giro antihorario 90 grados: ");
-  Serial.println (tiempoGiroAnti);
-}
-void desacelerar () {
-  if (v > 0.3) {
-    v = v - 0.20;
-  }
-  tiempoGiroHor = tiempoGiroHorOrig / v;
-  tiempoGiroAnti = tiempoGiroAntiOrig / v;
-  Serial.print("Velocidad: ");
-  Serial.println (int(1023*v));
-  Serial.print ("Tiempo giro horario 90 grados: ");
-  Serial.println (tiempoGiroHor);
-  Serial.print ("Tiempo giro antihorario 90 grados: ");
-  Serial.println (tiempoGiroAnti);
-}
-*/
-//IPAddress ip_rover (192,168,253,10);        // (si quiero usar el hotspot como router)
-//IPAddress ip_rover (192,168,137,10);        // (si quiero usar mi pc como router)
-//IPAddress puerta_enlace (192,168,253,154); // (si quiero usar el hotspot como router)
-//IPAddress puerta_enlace (192,168,137,1); // (si quiero usar mi pc como router)
-//IPAddress mascara(255,255,255,0);
-//R1 = 5 KOhm = 10 Ohm,
-//Vout = Vin*R2/(R1+R2) -> Vout = Vin *(5/(15)) = 8,4 V * 1/3 = 2,8
-//Vin lo voy a obtener multiplicando 8,4 * vout?
-//recta analog a dig: y de 0 a 1024, x de 0 a 1v
-// cada bat toma 4,2v y max 8,4v. 
-
+# 101 "C:/Users/ivanb/Documents/PlatformIO/Projects/Taller-Robotica-PIO/src/navegacion_auto_v2.ino"
 int velocidades[5] = {10,15,30,50,100};
 WiFiServer server(80);
 int estadoLed = LOW;
@@ -108,20 +91,20 @@ void setearVel (int pos) {
   v = velocidades[pos];
   Serial.print ("Velocidad: ");
   Serial.println (1023*v/100);
-  
+
 }
 
 int vActual () {
   return v;
 }
 
-// funciones de motor
+
 void configurarMotor (motor m) {
   pinMode(m.pin1,OUTPUT);
   pinMode(m.pin2,OUTPUT);
 }
 
-void girarAdelante (motor m) {  //esto es para controlar el giro de un motor en específico hacia adelante, habría que confirmar           // que sea el correcto, sino reasigno los pines en la instancia del motor y listo
+void girarAdelante (motor m) {
   digitalWrite(m.pin2,LOW);
   analogWrite(m.pin1,1023*v/100);
 }
@@ -131,12 +114,12 @@ void girarAtras (motor m) {
   analogWrite(m.pin2,1023*v/100);
 }
 
-void frenar (motor m) { //frena UN motor solo
+void frenar (motor m) {
   digitalWrite(m.pin1,LOW);
   digitalWrite(m.pin2,LOW);
 }
 
-// funciones auxiliares
+
 
 void prenderLed () {
   digitalWrite(pinLed,LOW);
@@ -149,28 +132,28 @@ void apagarLed () {
 int calcularDistancia() {
  digitalWrite(Trigger, LOW);
  delayMicroseconds(2);
-//Configurar trigPin en alto por 10 microsegundos
+
  digitalWrite(Trigger, HIGH);
  delayMicroseconds(10);
  digitalWrite(Trigger, LOW);
-// Leer el pin echo
+
  duracion = pulseIn(Echo, HIGH);
- distancia = duracion*0.0343/2; //ojo con las unidades
+ distancia = duracion*0.0343/2;
  Serial.println("distancia a obstáculo: " + String(distancia));
  return distancia;
 }
 
-/*
-Funciones de navegación básica
-*/
-void girarIzq () { //rover gira hacia la izquierda; revisar sentido
+
+
+
+void girarIzq () {
   frenar (motor_izq);
   girarAdelante (motor_der);
   prenderLed ();
   Serial.println("gira hacia la izquierda");
 }
 
-void girarDer () { //lo mismo pero hacia la derecha
+void girarDer () {
   frenar (motor_der);
   girarAdelante (motor_izq);
   prenderLed ();
@@ -181,15 +164,15 @@ void avanzar () {
     girarAdelante (motor_izq);
     girarAdelante (motor_der);
     prenderLed ();
-    Serial.println("avanza");  
-} 
+    Serial.println("avanza");
+}
 
 void detenerse () {
   frenar (motor_izq);
   frenar (motor_der);
   apagarLed ();
   Serial.println("se detiene");
-} 
+}
 
 void marchaAtras () {
   girarAtras (motor_izq);
@@ -198,7 +181,7 @@ void marchaAtras () {
   Serial.println("marcha atrás");
 }
 
-void girarIzqMarchaAtras () { //rover gira hacia la izquierda marcha atrás; revisar sentido
+void girarIzqMarchaAtras () {
   girarAtras (motor_der);
   frenar (motor_izq);
   prenderLed ();
@@ -206,7 +189,7 @@ void girarIzqMarchaAtras () { //rover gira hacia la izquierda marcha atrás; rev
 }
 
 void girarHorario () {
-  int a = v; 
+  int a = v;
   Serial.println(v*1023/100);
   setearVel (0);
   girarAtras (motor_der);
@@ -218,7 +201,7 @@ void girarHorario () {
 }
 
 void girarAntiHorario () {
-  int a = v; 
+  int a = v;
   Serial.println(a*1023/100);
   setearVel (0);
   girarAtras (motor_izq);
@@ -229,146 +212,13 @@ void girarAntiHorario () {
   Serial.println("gira en sentido antihorario");
 }
 
-void girarDerMarchaAtras () { //rover gira hacia la derecha marcha atrás; revisar sentido
+void girarDerMarchaAtras () {
   girarAtras (motor_izq);
   frenar (motor_der);
   prenderLed ();
   Serial.println("gira marcha atrás hacia la derecha");
 }
-
-// funciones autónomas
-/*
-bool evadirIzq () {
-  Serial.println ("Intenta evadir por izquierda.");
-  int i = 0;
-  detenerse();
-  delay(500);
-  girarAntiHorario ();
-  delay(tiempoGiroHor);
-  detenerse ();
-  delay(500);
-  int distancia = calcularDistancia();
-  bool frenteLibre = false;
-  if (distancia > umbral) {
-    while (distancia > umbral && i < tiempoAvance && !frenteLibre) {  
-      if (i%1000 == 0 && i > 0) {    //explicado en la función de abajo
-        girarHorario ();
-        delay(tiempoGiroHor);
-        detenerse ();
-        delay(500);
-        distancia = calcularDistancia ();
-        if (distancia > umbral) {
-          frenteLibre = true;
-        } else {
-          girarAntiHorario ();
-          delay (tiempoGiroAnti);
-          detenerse();
-          delay(500);
-        }
-      }
-      if (!frenteLibre) {
-        avanzar ();
-        delay (50);
-        i += 50;
-        distancia = calcularDistancia ();
-      }
-      
-    }
-    if (!frenteLibre) {   
-      int tAvanz= i;       //avanzó una vez que dobló pero era muy poco (depende del ancho del objeto)
-      i = 0;
-      detenerse ();
-      delay(500);
-      marchaAtras ();
-      delay(tAvanz);
-      detenerse ();
-      delay(500);
-      i = 0;
-      girarHorario ();   
-      delay(tiempoGiroHor);
-      detenerse();
-    } 
-  } else {        
-      detenerse ();
-      delay(500);
-      i = 0;
-      girarHorario ();                 //deshace el giro (no llegó a avanzar)
-      delay(tiempoGiroHor);
-      detenerse();
-    }
-  if (frenteLibre) {
-    Serial.println("giró bien izq 90");
-  } else {
-    Serial.println("NO giró izq 90");
-  }
-  return frenteLibre;
-}
-
-bool evadirDer () {
-  Serial.println ("Intenta evadir por derecha.");
-  int i = 0;
-  detenerse();
-  delay (500);
-  girarHorario ();
-  delay(tiempoGiroHor);
-  detenerse();
-  delay (500);
-  int distancia = calcularDistancia ();
-  bool frenteLibre = false;
-  if (distancia > umbral) {
-    while (distancia > umbral && i < tiempoAvance && !frenteLibre) {  
-      if (i%1000 == 0 && i > 0) {   //como tiene un radar en el frente nada más, cada medio segundo gira 90 grados para quedar en la dirección original,
-        girarAntiHorario ();   //analiza si el frente está libre, si no lo está gira 90 grados para el otro lado, y sigue avanzando
-        delay(tiempoGiroAnti);              //paralelo al obstáculo hasta que cumpla el tiempoAvance máximo. 
-        detenerse();      
-        delay(500);            
-        distancia = calcularDistancia ();
-        if (distancia > umbral) {
-          frenteLibre = true;
-        } else {
-          girarHorario ();
-          delay (tiempoGiroHor);
-          detenerse();
-          delay(500);
-        }
-      }
-      if (frenteLibre  == false) {
-        avanzar ();
-        delay (100);
-        i += 100;
-        distancia = calcularDistancia ();
-      }
-    }
-    if (!frenteLibre) {      //retrocede porque llegó a avanzar hacia el costado
-      int tAvanz= i;    //tiempo que avanzó
-      i = 0;
-      detenerse();
-      delay (500);
-      marchaAtras ();
-      delay (tAvanz);
-      detenerse();
-      delay (500);
-      girarAntiHorario ();   
-      delay(tiempoGiroAnti);
-      detenerse();
-    } 
-  } else {        
-      i = 0;
-      detenerse();
-      delay (500);      
-      girarAntiHorario ();           //deshace el giro (no llegó a avanzar)
-      delay(tiempoGiroAnti);
-      detenerse();
-    }
-  if (frenteLibre) {
-    Serial.println("giró bien der 90");
-  } else {
-    Serial.println("NO giró der 90");
-  }
-  return frenteLibre;
-}
-*/
-
+# 372 "C:/Users/ivanb/Documents/PlatformIO/Projects/Taller-Robotica-PIO/src/navegacion_auto_v2.ino"
 bool evadirIzq () {
   bool frenteLibre;
   girarAntiHorario ();
@@ -418,13 +268,13 @@ void navegacionAutomatica() {
   if (calcularDistancia() > umbral) {
     avanzar();
     delay(10);
-  } 
+  }
   else {
     detenerse();
     delay (100);
     marchaAtras ();
     delay (300);
-    detenerse(); //importante!!!! que frene antes de girar
+    detenerse();
     i = random(0,2);
     if (i == 0) {
       if (!evadirIzq()) {
@@ -455,10 +305,10 @@ void navegacionAutomatica() {
   }
 }
 
-//conexión a wifi
+
 
 void manejarCliente(WiFiClient &cliente) {
-  while (!cliente.available()) {   
+  while (!cliente.available()) {
     delay(1);
   }
   String request = cliente.readStringUntil('\n');
@@ -506,7 +356,7 @@ void manejarCliente(WiFiClient &cliente) {
   if (request.indexOf("/desacelerar") != -1) {
     Serial.println("desacelera");
     cliente.println("HTTP/1.1 200 OK\nContent-Type: text/html\n\n\n<html><body>desacelera</body></html>\n");
-    //desacelerar ();
+
   }
   if (request.indexOf("/cambiodemodo") != -1) {
     reversa = false;
@@ -580,15 +430,15 @@ void manejarCliente(WiFiClient &cliente) {
   cliente.flush();
 }
 byte listaIp[5] = {0,0,0,0,0};
-// creo una lista del ultimo octeto de la ip de CADA cliente, o sea ipcliente[3], para guardar los clientes y mostrar cuando uno nuevo se conecte;
- //se manejan en  bloques de bytes las ip, son como un array[4] de bytes, guardo SOLO el ultimo octeto
+
+
 bool clienteNuevo (WiFiClient &cliente) {
   bool esNuevo = true;
   int i = 0;
   while (i < 5) {
     if (cliente.remoteIP()[3] == listaIp[i]) {
       esNuevo = false;
-    } 
+    }
     i++;
   }
   if (esNuevo) {
@@ -600,7 +450,7 @@ bool clienteNuevo (WiFiClient &cliente) {
   }
     return esNuevo;
 }
-  
+
 void setup() {
   detenerse ();
   v = velocidades[2];
@@ -615,7 +465,7 @@ void setup() {
   pinMode(A0,OUTPUT);
   detenerse();
   manual = true;
-  for (int c = 0;c<4;c++) { //para que no arranque tan rápido el serial y todo eso
+  for (int c = 0;c<4;c++) {
     prenderLed ();
     delay (150);
     apagarLed();
@@ -629,18 +479,18 @@ void setup() {
   detenerse ();
 }
 void loop() {
-  WiFiClient cliente = server.accept();  //supuestamente se usa accept ahora y no available
+  WiFiClient cliente = server.accept();
   if (cliente) {
-    if (clienteNuevo(cliente)) {  //si es un cliente nuevo imprime su ip
+    if (clienteNuevo(cliente)) {
       Serial.print("nuevo cliente, su ip es: ");
       Serial.println(cliente.remoteIP());
     }
 
     manejarCliente (cliente);
   }
-  //VoltBateria();
+
   if (!manual) {
     navegacionAutomatica ();
   }
-  
+
 }
